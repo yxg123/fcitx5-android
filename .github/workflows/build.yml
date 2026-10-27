@@ -36,14 +36,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Build release APK
-        env:
-          # 签名(可选):在仓库 Settings -> Secrets and variables -> Actions 里配置以下三项。
-          # 不配置则产出「未签名」APK,安装前需自行用 keystore 签名。
-          SIGN_KEY_BASE64: ${{ secrets.SIGN_KEY_BASE64 }}
-          SIGN_KEY_PWD: ${{ secrets.SIGN_KEY_PWD }}
-          SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
-        run: ./gradlew :app:assembleRelease
+      - name: Build release APK (debug-signed)
+        run: |
+          # 生成临时调试签名密钥(仅用于内部测试;正式发布请用公司 keystore,通过仓库 Secrets 提供)
+          keytool -genkeypair -v -keystore debug.keystore -storetype PKCS12 \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+          export SIGN_KEY_BASE64="$(base64 -w0 debug.keystore)"
+          export SIGN_KEY_PWD="android"
+          export SIGN_KEY_ALIAS="androiddebugkey"
+          ./gradlew :app:assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v7
