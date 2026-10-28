@@ -43,11 +43,10 @@ class AlphabetKey(
     val character: String,
     val punctuation: String,
     variant: Variant = Variant.Normal,
-    popup: Array<Popup>? = null
 ) : KeyDef(
-    Appearance.AltText(
+    // 需求6:去掉右上角小字(不再用 AltText),并禁用长按弹出更多输入
+    Appearance.Text(
         displayText = character,
-        altText = punctuation,
         textSize = 23f,
         variant = variant
     ),
@@ -55,10 +54,7 @@ class AlphabetKey(
         Behavior.Press(KeyAction.FcitxKeyAction(character)),
         Behavior.Swipe(KeyAction.FcitxKeyAction(punctuation))
     ),
-    popup ?: arrayOf(
-        Popup.AltPreview(character, punctuation),
-        Popup.Keyboard.Preset(character)
-    )
+    null
 )
 
 class AlphabetDigitKey(
@@ -169,26 +165,7 @@ class CommaKey(
         Behavior.Press(KeyAction.FcitxKeyAction(","))
     ),
     arrayOf(
-        Popup.Preview(","),
-        Popup.Menu(
-            arrayOf(
-                Popup.Menu.Item(
-                    "Emoji",
-                    R.drawable.ic_baseline_tag_faces_24,
-                    KeyAction.PickerSwitchAction()
-                ),
-                Popup.Menu.Item(
-                    "QuickPhrase",
-                    R.drawable.ic_baseline_format_quote_24,
-                    KeyAction.QuickPhraseAction
-                ),
-                Popup.Menu.Item(
-                    "Unicode",
-                    R.drawable.ic_logo_unicode,
-                    KeyAction.UnicodeAction
-                )
-            )
-        )
+        Popup.Preview(",")
     )
 )
 
@@ -231,15 +208,7 @@ class ReturnKey(percentWidth: Float = 0.15f) : KeyDef(
     setOf(
         Behavior.Press(KeyAction.SymAction(KeySym(FcitxKeyMapping.FcitxKey_Return)))
     ),
-    arrayOf(
-        Popup.Menu(
-            arrayOf(
-                Popup.Menu.Item(
-                    "Emoji", R.drawable.ic_baseline_tag_faces_24, KeyAction.PickerSwitchAction()
-                )
-            )
-        )
-    ),
+    null
 )
 
 class ImageLayoutSwitchKey(

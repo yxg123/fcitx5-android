@@ -66,7 +66,12 @@ fcitxComponent {
         "fcitx5-chinese-addons"
     )
     // exclude (delete immediately after install) tables that nobody would use
-    excludeFiles = listOf("cangjie", "erbi", "qxm", "wanfeng").map {
+    // 需求1:仅保留拼音 + 英文(keyboard-us),排除其余中文输入法
+    excludeFiles = listOf(
+        "cangjie", "erbi", "qxm", "wanfeng",
+        "shuangpin", "wubi", "wbpy",
+        "ziranma", "dianbaoma", "zhengma", "jyutping"
+    ).map {
         "usr/share/fcitx5/inputmethod/$it.conf"
     }
     installPrebuiltAssets = true

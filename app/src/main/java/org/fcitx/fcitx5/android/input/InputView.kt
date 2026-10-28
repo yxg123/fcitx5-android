@@ -6,7 +6,6 @@
 package org.fcitx.fcitx5.android.input
 
 import android.annotation.SuppressLint
-import android.content.res.Configuration
 import android.graphics.Point
 import android.os.Build
 import android.view.View
@@ -168,29 +167,23 @@ class InputView(
                     }.getRealSize(it)
                 }.y
             }
-            val percent = when (resources.configuration.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> keyboardHeightPercentLandscape
-                else -> keyboardHeightPercent
-            }.getValue()
+            // 强制横屏:始终使用横屏高度参数
+            val percent = keyboardHeightPercentLandscape.getValue()
             Timber.d("keyboardHeightPx get(): baseType=${baseType}, base=${base}, percent=${percent}")
             return base * percent / 100
         }
 
     private val keyboardSidePaddingPx: Int
         get() {
-            val value = when (resources.configuration.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> keyboardSidePaddingLandscape
-                else -> keyboardSidePadding
-            }.getValue()
+            // 强制横屏:始终使用横屏左右内边距参数
+            val value = keyboardSidePaddingLandscape.getValue()
             return dp(value)
         }
 
     private val keyboardBottomPaddingPx: Int
         get() {
-            val value = when (resources.configuration.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> keyboardBottomPaddingLandscape
-                else -> keyboardBottomPadding
-            }.getValue()
+            // 强制横屏:始终使用横屏底部内边距参数
+            val value = keyboardBottomPaddingLandscape.getValue()
             return dp(value)
         }
 

@@ -7,7 +7,6 @@ package org.fcitx.fcitx5.android.input
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -201,27 +200,6 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
         }
         jobs.trySend(job)
         return job
-    }
-
-    /**
-     * 强制键盘以横屏布局渲染(机器人竖屏设备场景)。
-     * 将本服务上下文的 orientation 固定为 LANDSCAPE,使 InputView / KeyView 中
-     * 所有 `resources.configuration.orientation` 读取都得到横屏值。
-     * 回退方法:删除 [attachBaseContext] 与 [onConfigurationChanged] 里的强制逻辑即可。
-     */
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase.forceLandscapeContext())
-    }
-
-    private fun Context.forceLandscapeContext(): Context {
-        val config = Configuration(resources.configuration)
-        config.orientation = Configuration.ORIENTATION_LANDSCAPE
-        if (config.screenHeightDp > config.screenWidthDp) {
-            val w = config.screenWidthDp
-            config.screenWidthDp = config.screenHeightDp
-            config.screenHeightDp = w
-        }
-        return createConfigurationContext(config)
     }
 
     override fun onCreate() {
@@ -557,8 +535,6 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     private lateinit var lastKnownConfig: Configuration
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        // 强制横屏:忽略系统实际方向,固定为横屏
-        newConfig.orientation = Configuration.ORIENTATION_LANDSCAPE
         postFcitxJob { reset() }
         /**
          * skip keyboard|keyboardHidden changes, because we have [inputDeviceMgr]
