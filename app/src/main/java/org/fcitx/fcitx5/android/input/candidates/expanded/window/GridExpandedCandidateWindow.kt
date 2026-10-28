@@ -5,7 +5,6 @@
 
 package org.fcitx.fcitx5.android.input.candidates.expanded.window
 
-import android.content.res.Configuration
 import android.util.DisplayMetrics
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -22,10 +21,8 @@ class GridExpandedCandidateWindow :
 
     private val gridSpanCount by lazy {
         AppPrefs.getInstance().keyboard.run {
-            if (context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-                expandedCandidateGridSpanCount
-            else
-                expandedCandidateGridSpanCountLandscape
+            // 强制横屏:始终使用横屏参数
+            expandedCandidateGridSpanCountLandscape
         }.getValue()
     }
 

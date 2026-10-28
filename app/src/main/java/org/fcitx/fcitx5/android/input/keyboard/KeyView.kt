@@ -302,7 +302,8 @@ class AltTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.AltText)
         appearanceView.apply {
             add(altText, lParams(wrapContent, wrapContent))
         }
-        applyLayout(resources.configuration.orientation)
+        // 强制横屏:始终按横屏布局
+        applyLayout(Configuration.ORIENTATION_LANDSCAPE)
     }
 
     private fun applyTopRightAltTextPosition() {
@@ -372,7 +373,8 @@ class AltTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.AltText)
         if (ThemeManager.prefs.punctuationPosition.getValue() == PunctuationPosition.TopRight) {
             return
         }
-        applyLayout(newConfig.orientation)
+        // 强制横屏:始终按横屏布局
+        applyLayout(Configuration.ORIENTATION_LANDSCAPE)
     }
 }
 
@@ -424,7 +426,8 @@ class ImageTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.ImageT
             centerHorizontally()
             topToTop = parentId
         }
-        updateMargins(resources.configuration.orientation)
+        // 强制横屏:始终按横屏边距
+        updateMargins(Configuration.ORIENTATION_LANDSCAPE)
     }
 
     private fun updateMargins(orientation: Int) {
@@ -449,6 +452,7 @@ class ImageTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.ImageT
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        updateMargins(newConfig.orientation)
+        // 强制横屏:始终按横屏边距
+        updateMargins(Configuration.ORIENTATION_LANDSCAPE)
     }
 }

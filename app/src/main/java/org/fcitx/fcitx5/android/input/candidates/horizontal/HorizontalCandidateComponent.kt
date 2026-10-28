@@ -5,7 +5,6 @@
 
 package org.fcitx.fcitx5.android.input.candidates.horizontal
 
-import android.content.res.Configuration
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
 import androidx.core.view.updateLayoutParams
@@ -48,10 +47,8 @@ class HorizontalCandidateComponent :
     private val fillStyle by AppPrefs.getInstance().keyboard.horizontalCandidateStyle
     private val maxSpanCountPref by lazy {
         AppPrefs.getInstance().keyboard.run {
-            if (context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-                expandedCandidateGridSpanCount
-            else
-                expandedCandidateGridSpanCountLandscape
+            // 强制横屏:始终使用横屏参数
+            expandedCandidateGridSpanCountLandscape
         }
     }
 

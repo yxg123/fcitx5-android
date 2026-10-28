@@ -156,8 +156,12 @@ class InputView(
     private val keyboardHeightPx: Int
         get() {
             val baseType = keyboardHeightPercentBase.getValue()
+            // 强制横屏:键盘高度始终以「横屏高度」(屏幕短边)为基准,
+            // 竖屏时输入视图本身已被旋转成横屏布局,短边才是它的高度
             val base = when (baseType) {
-                DisplayMetrics -> resources.displayMetrics.heightPixels
+                DisplayMetrics -> resources.displayMetrics.let {
+                    minOf(it.widthPixels, it.heightPixels)
+                }
                 RealSize -> Point().also {
                     @Suppress("DEPRECATION")
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -165,7 +169,7 @@ class InputView(
                     } else {
                         context.windowManager.defaultDisplay
                     }.getRealSize(it)
-                }.y
+                }.let { minOf(it.x, it.y) }
             }
             // 强制横屏:始终使用横屏高度参数
             val percent = keyboardHeightPercentLandscape.getValue()

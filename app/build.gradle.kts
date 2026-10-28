@@ -67,10 +67,11 @@ fcitxComponent {
     )
     // exclude (delete immediately after install) tables that nobody would use
     // 需求1:仅保留拼音 + 英文(keyboard-us),排除其余中文输入法
+    // 注意:这里必须是 fcitx5-chinese-addons 的真实 .conf 文件名
+    //   db.conf=电报码  wbx.conf=五笔  zrm.conf=自然码
     excludeFiles = listOf(
-        "cangjie", "erbi", "qxm", "wanfeng",
-        "shuangpin", "wubi", "wbpy",
-        "ziranma", "dianbaoma", "zhengma", "jyutping"
+        "cangjie", "erbi", "qxm", "wanfeng", "shuangpin",
+        "db", "wbx", "zrm", "wbpy", "zhengma", "jyutping"
     ).map {
         "usr/share/fcitx5/inputmethod/$it.conf"
     }

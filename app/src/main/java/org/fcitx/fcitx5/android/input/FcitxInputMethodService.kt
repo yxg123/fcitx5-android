@@ -79,6 +79,7 @@ import splitties.dimensions.dp
 import splitties.resources.styledColor
 import timber.log.Timber
 import kotlin.math.max
+import kotlin.math.min
 
 class FcitxInputMethodService : LifecycleInputMethodService() {
 
@@ -573,21 +574,85 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
         return null
     }
 
+    /**
+     * 需求2:输入法界面始终按「横屏」方向显示。
+     * 系统处于竖屏时,把整个输入视图当作横屏布局(W = 长边, H = 短边)排布,
+     * 再逆时针旋转 90° 贴到屏幕右侧 —— 把设备转 90° 看就是正常的底部横屏键盘。
+     */
+    private val isSystemPortrait: Boolean
+        get() = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    // 强制横屏时使用的「横屏」尺寸,保证 setInputView 与 onComputeInsets 使用同一套数值
+    private var forcedLongSide = 0
+
+    private fun screenLongShort(): Pair<Int, Int> {
+        // 优先使用输入法窗口(已排除状态栏等 insets)的实际尺寸
+        val w: Int
+        val h: Int
+        if (decorView.width > 0 && decorView.height > 0) {
+            w = decorView.width
+            h = decorView.height
+        } else {
+            val dm = resources.displayMetrics
+            w = dm.widthPixels
+            h = dm.heightPixels
+        }
+        return max(w, h) to min(w, h)
+    }
+
+    private fun applyInputViewTransform(view: InputView) {
+        if (isSystemPortrait) {
+            val (longSide, shortSide) = screenLongShort()
+            forcedLongSide = longSide
+            // 按横屏尺寸排布(长边 × 短边)
+            view.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = longSide
+                height = shortSide
+            }
+            // 逆时针旋转 90°(pivot 在左上角),再下移长边长度,使横屏内容恰好铺满竖屏
+            view.pivotX = 0f
+            view.pivotY = 0f
+            view.rotation = -90f
+            view.translationX = 0f
+            view.translationY = longSide.toFloat()
+        } else {
+            forcedLongSide = 0
+            view.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = ViewGroup.LayoutParams.MATCH_PARENT
+                height = ViewGroup.LayoutParams.MATCH_PARENT
+            }
+            view.rotation = 0f
+            view.translationX = 0f
+            view.translationY = 0f
+        }
+    }
+
     override fun setInputView(view: View) {
         super.setInputView(view)
         // input method layout has not changed in 11 years:
         // https://android.googlesource.com/platform/frameworks/base/+/ae3349e1c34f7aceddc526cd11d9ac44951e97b6/core/res/res/layout/input_method.xml
         // expand inputArea to fullscreen
-        contentView.findViewById<FrameLayout>(android.R.id.inputArea)
-            .updateLayoutParams<ViewGroup.LayoutParams> {
+        val inputArea = contentView.findViewById<FrameLayout>(android.R.id.inputArea)
+        inputArea.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = ViewGroup.LayoutParams.MATCH_PARENT
+        }
+        // 旋转后的视图在布局上会超出父容器(横屏宽度 > 竖屏宽度),禁止父容器裁剪
+        inputArea.clipChildren = false
+        inputArea.clipToPadding = false
+
+        if (view is InputView) {
+            applyInputViewTransform(view)
+            // 首次 setInputView 时窗口可能尚未测量,布局完成后用真实尺寸再校正一次
+            view.post {
+                applyInputViewTransform(view)
+                updateInputViewShown()
+            }
+        } else {
+            // expand InputView to fullscreen, since [android.inputmethodservice.InputMethodService.setInputView]
+            // would set InputView's height to [ViewGroup.LayoutParams.WRAP_CONTENT]
+            view.updateLayoutParams<ViewGroup.LayoutParams> {
                 height = ViewGroup.LayoutParams.MATCH_PARENT
             }
-        /**
-         * expand InputView to fullscreen, since [android.inputmethodservice.InputMethodService.setInputView]
-         * would set InputView's height to [ViewGroup.LayoutParams.WRAP_CONTENT]
-         */
-        view.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = ViewGroup.LayoutParams.MATCH_PARENT
         }
     }
 
@@ -599,11 +664,27 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     override fun onComputeInsets(outInsets: Insets) {
         if (inputDeviceMgr.isVirtualKeyboard) {
-            inputView?.keyboardView?.getLocationInWindow(inputViewLocation)
-            outInsets.apply {
-                contentTopInsets = inputViewLocation[1]
-                visibleTopInsets = inputViewLocation[1]
-                touchableInsets = Insets.TOUCHABLE_INSETS_VISIBLE
+            if (isSystemPortrait) {
+                // 强制横屏:键盘在屏幕右侧,不应压缩应用底部;把触摸区域限制在键盘所在的竖条内,
+                // 以外的区域交给下层应用
+                val longSide = if (forcedLongSide > 0) forcedLongSide else screenLongShort().first
+                outInsets.contentTopInsets = decorView.height.takeIf { it > 0 } ?: longSide
+                outInsets.visibleTopInsets = 0
+                val kv = inputView?.keyboardView
+                if (kv != null && kv.height > 0) {
+                    outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_REGION
+                    // 旋转后键盘的窗口坐标: 逆时针 90° 后 x'=y, y'=长边-x
+                    outInsets.touchableRegion.set(kv.top, 0, kv.bottom, longSide)
+                } else {
+                    outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_FRAME
+                }
+            } else {
+                inputView?.keyboardView?.getLocationInWindow(inputViewLocation)
+                outInsets.apply {
+                    contentTopInsets = inputViewLocation[1]
+                    visibleTopInsets = inputViewLocation[1]
+                    touchableInsets = Insets.TOUCHABLE_INSETS_VISIBLE
+                }
             }
         } else {
             val n = decorView.findViewById<View>(android.R.id.navigationBarBackground)?.height ?: 0

@@ -6,7 +6,6 @@ package org.fcitx.fcitx5.android.input.candidates.expanded
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
 import android.view.Gravity
 import androidx.constraintlayout.widget.ConstraintLayout
 import org.fcitx.fcitx5.android.R
@@ -121,7 +120,8 @@ class ExpandedCandidateLayout(context: Context, theme: Theme) : ConstraintLayout
     init {
         id = R.id.expanded_candidate_view
 
-        val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        // 强制横屏:始终按横屏参数
+        val landscape = true
         val inset = dp(if (landscape) keyVerticalMarginLandscape else keyVerticalMargin)
         tabsContainer.background =
             singleSideBorderDrawable(dp(1), theme.dividerColor, Gravity.RIGHT, inset)
