@@ -37,9 +37,9 @@ class NumberKeyboard(
                 NumPadKey("9", 0xffb9, 30f, 0f),
             ),
             listOf(
-                LayoutSwitchKey("ABC", TextKeyboard.Name, 0.25f),
-                NumPadKey("0", 0xffb0, 30f, 0.5f),
-                BackspaceKey(0.25f),
+                LayoutSwitchKey("ABC", TextKeyboard.Name, 0f),
+                NumPadKey("0", 0xffb0, 30f, 0f),
+                BackspaceKey(0f),
             )
         )
     }
