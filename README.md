@@ -1,4 +1,13 @@
-# fcitx5-android
+# fcitx5-android(衍生修改版)
+
+> **本仓库不是 Fcitx 官方发行版。**
+> 它是 [fcitx5-android](https://github.com/fcitx5-android/fcitx5-android) 的修改版,用于特定硬件的输入法定制。
+> - 修改内容与日期见 [NOTICE.md](NOTICE.md)
+> - 合规义务与改名清单见 [COMPLIANCE.md](COMPLIANCE.md)
+> - 许可:与原项目相同,**LGPL-2.1-or-later**(见 [LICENSE](LICENSE));我方改动同样以 LGPL-2.1-or-later 开源
+>
+> 下方「Download」中的 GitHub Releases / F-Droid / Google Play / Jenkins 链接均指向**上游官方渠道**,
+> 与本修改版无关,请勿当作本修改版的发布渠道。
 
 [Fcitx5](https://github.com/fcitx/fcitx5) input method framework and engines ported to Android.
 

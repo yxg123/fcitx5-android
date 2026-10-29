@@ -1,6 +1,7 @@
 /*
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2025 Fcitx5 for Android Contributors
+ * Modified 2026-10-29 (see NOTICE.md for the list of changes).
  */
 
 package org.fcitx.fcitx5.android.input.candidates.horizontal
